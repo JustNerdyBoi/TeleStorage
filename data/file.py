@@ -4,7 +4,7 @@ from .db_session import SqlAlchemyBase
 
 
 class File(SqlAlchemyBase):
-    __teblename__ = 'files'
+    __tablename__ = 'files'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     owner_id = orm.relationship('User')

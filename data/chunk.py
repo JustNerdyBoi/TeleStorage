@@ -4,7 +4,7 @@ from .db_session import SqlAlchemyBase
 
 
 class Chunk(SqlAlchemyBase):
-    __teblename__ = 'chunks'
+    __tablename__ = 'chunks'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     file_id = orm.relationship('File')
