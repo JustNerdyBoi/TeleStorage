@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect
 from flask_restful import Api
 import resources
 
@@ -17,12 +17,21 @@ def landing():
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
-    return 'login page'
+    if request.method == 'GET':
+        return render_template('login.html')
+    elif request.method == 'POST':
+        print(request.form['email'])
+        return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
 
 @app.route("/register", methods=['POST', 'GET'])
 def registration():
-    return render_template('registration.html')
+    if request.method == 'GET':
+        return render_template('registration.html')
+    elif request.method == 'POST':
+        print(request.form['email'])
+        return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+
 
 
 @app.route("/home", methods=['POST', 'GET'])
