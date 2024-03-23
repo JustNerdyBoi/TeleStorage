@@ -7,7 +7,7 @@ class Chunk(SqlAlchemyBase):
     __tablename__ = 'chunks'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    file_id = orm.relationship('File')
+    file_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("files.id"))
 
     chat_id = sqlalchemy.Column(sqlalchemy.Integer)
     message_id = sqlalchemy.Column(sqlalchemy.Integer)
