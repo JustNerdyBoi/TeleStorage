@@ -40,7 +40,7 @@ def home():
 
 
 def main():
-    db_session.global_init("db/base.db")  # инициация бд
+    db_session.global_init("db/base.db")  # инициация бдl
     app.run(port=8000, host='127.0.0.1')
 
 
