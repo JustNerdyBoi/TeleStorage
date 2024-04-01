@@ -42738,7 +42738,8 @@ a.u-link.u-text-hover-grey-90:hover {
 .u-header .u-image-1 {
   width: 117px;
   height: 70px;
-  margin: 31px auto 14px;
+  margin: 0 auto 0 50%;
+  transform: translateX(-50%);
 }
 
 .u-header .u-logo-image-1 {

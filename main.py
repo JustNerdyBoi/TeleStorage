@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect
 from flask_restful import Api
 import resources
 from hashlib import sha3_256
-from flask_login import LoginManager
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from data import db_session
 from data.user import User
 
@@ -14,6 +14,7 @@ api = Api(app, catch_all_404s=True)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -22,17 +23,26 @@ def load_user(user_id):
 
 @app.route('/', methods=['POST', 'GET'])
 def landing():
+
+    if current_user.is_authenticated:
+        return redirect('/home')
+
     return render_template('landing.html')
 
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
+
+    if current_user.is_authenticated:
+        return redirect('/home')
+
     form = resources.LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        current_user = db_sess.query(User).filter(User.email == request.form['email']).first()
-        if current_user:
-            if current_user.hashed_password == sha3_256(request.form['password'].encode()).hexdigest():
+        user = db_sess.query(User).filter(User.email == request.form['email']).first()
+        if user:
+            if user.hashed_password == sha3_256(request.form['password'].encode()).hexdigest():
+                login_user(user, remember=form.remember_me.data)
                 return redirect('/home')
         form.password.errors.append('Incorrect email or password')
     return render_template('login_form.html', form=form, title='Login')
@@ -40,6 +50,10 @@ def login():
 
 @app.route("/register", methods=['POST', 'GET'])
 def registration():
+
+    if current_user.is_authenticated:
+        return redirect('/home')
+
     form = resources.LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -53,13 +67,25 @@ def registration():
             db_sess.add(user)
             db_sess.commit()
 
+            login_user(user, remember=form.remember_me.data)
             return redirect('/home')
+
     return render_template('login_form.html', form=form, title='Registration')
+
+
+@app.route('/logout')
+def logout():
+    if current_user.is_authenticated:
+        logout_user()
+    return redirect("/")
 
 
 @app.route("/home", methods=['POST', 'GET'])
 def home():
-    return render_template('base.html', title='Home')
+    if current_user.is_authenticated:
+        return render_template('home.html', title='Home', current_user=current_user)
+    else:
+        return redirect('/')
 
 
 def main():
