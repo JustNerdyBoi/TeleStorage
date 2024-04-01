@@ -14,11 +14,10 @@ api = Api(app, catch_all_404s=True)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
-    return db_sess.query(User).get(id)
+    return db_sess.query(User).get(user_id)
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -28,44 +27,39 @@ def landing():
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
-    if request.method == 'GET':
-        return render_template('login.html')
-    elif request.method == 'POST':
+    form = resources.LoginForm()
+    if form.validate_on_submit():
         db_sess = db_session.create_session()
         current_user = db_sess.query(User).filter(User.email == request.form['email']).first()
         if current_user:
             if current_user.hashed_password == sha3_256(request.form['password'].encode()).hexdigest():
-                return 'successful login'
-        return 'incorrect email or password'
+                return redirect('/home')
+        form.password.errors.append('Incorrect email or password')
+    return render_template('login_form.html', form=form, title='Login')
 
 
 @app.route("/register", methods=['POST', 'GET'])
 def registration():
-    if request.method == 'GET':
-        return render_template('registration.html')
-
-    elif request.method == 'POST':
-
+    form = resources.LoginForm()
+    if form.validate_on_submit():
         db_sess = db_session.create_session()
-
         if db_sess.query(User).filter(User.email == request.form['email']).all():
-            return 'email exists'
+            form.email.errors.append('This email already used')
 
-        if not request.form['password']:
-            return 'no password'
+        elif request.form['password']:
+            user = User()
+            user.email = request.form['email']
+            user.hashed_password = sha3_256(request.form['password'].encode()).hexdigest()
+            db_sess.add(user)
+            db_sess.commit()
 
-        user = User()
-        user.email = request.form['email']
-        user.hashed_password = sha3_256(request.form['password'].encode()).hexdigest()
-        db_sess.add(user)
-        db_sess.commit()
-
-        return 'successful registration'
+            return redirect('/home')
+    return render_template('login_form.html', form=form, title='Registration')
 
 
 @app.route("/home", methods=['POST', 'GET'])
 def home():
-    return render_template('user-data_show.html')
+    return render_template('base.html', title='Home')
 
 
 def main():
