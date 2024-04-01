@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect
 from flask_restful import Api
 import resources
 from hashlib import sha3_256
-from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user
 from data import db_session
 from data.user import User
 
@@ -27,7 +27,7 @@ def landing():
     if current_user.is_authenticated:
         return redirect('/home')
 
-    return render_template('landing.html')
+    return render_template('landing.html', title='Home')
 
 
 @app.route("/login", methods=['POST', 'GET'])
@@ -39,12 +39,12 @@ def login():
     form = resources.LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == request.form['email']).first()
+        user = db_sess.query(User).filter(User.login == request.form['login']).first()
         if user:
             if user.hashed_password == sha3_256(request.form['password'].encode()).hexdigest():
                 login_user(user, remember=form.remember_me.data)
                 return redirect('/home')
-        form.password.errors.append('Incorrect email or password')
+        form.password.errors.append('Incorrect login or password')
     return render_template('login_form.html', form=form, title='Login')
 
 
@@ -57,12 +57,12 @@ def registration():
     form = resources.LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.email == request.form['email']).all():
-            form.email.errors.append('This email already used')
+        if db_sess.query(User).filter(User.login == request.form['login']).all():
+            form.login.errors.append('This login already used')
 
         elif request.form['password']:
             user = User()
-            user.email = request.form['email']
+            user.login = request.form['login']
             user.hashed_password = sha3_256(request.form['password'].encode()).hexdigest()
             db_sess.add(user)
             db_sess.commit()
