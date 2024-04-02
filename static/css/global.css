@@ -4,6 +4,15 @@
   content: "";
   height: 0; }
 
+.alert {
+  color: red
+
+}
+
+.alert-danger {
+  font-weight: 700
+}
+
 .u-section-1 .u-sheet-1 {
   min-height: 520px;
 }
@@ -42738,7 +42747,7 @@ a.u-link.u-text-hover-grey-90:hover {
 .u-header .u-image-1 {
   width: 117px;
   height: 70px;
-  margin: 0 auto 0 50%;
+  margin: 10px auto 0 50%;
   transform: translateX(-50%);
 }
 
