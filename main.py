@@ -82,14 +82,15 @@ def logout():
 def home():
     if not current_user.is_authenticated:
         return redirect('/')
-    form = resources.UploadForm()
-    if form.validate_on_submit():
-        if form.file.data:
-            filename = secure_filename(form.file.data.filename)
-            form.file.data.save('temp/uploads/' + filename)
+    error = ''
+    if request.method == "POST" and request.files:
+        if request.files:
+            filename = secure_filename(request.files['file1'].filename)
+            request.files['file1'].save('temp/uploads/' + filename)
+            print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
         else:
-            form.file.errors.append('Choose file to upload')
-    return render_template('home.html', title='Home', current_user=current_user, form=form)
+            error = 'Choose file to upload'
+    return render_template('home.html', title='Home', current_user=current_user, error=error)
 
 
 

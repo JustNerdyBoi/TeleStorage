@@ -9,8 +9,3 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField()
     remember_me = BooleanField('Remember me')
-
-
-class UploadForm(FlaskForm):
-    file = FileField('Upload')
-    submit = SubmitField('Submit')

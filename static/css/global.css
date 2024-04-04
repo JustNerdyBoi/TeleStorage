@@ -4,6 +4,21 @@
   content: "";
   height: 0; }
 
+.progress-wrapper {
+    width:25%;
+    margin: 5px auto 5px 50%;
+    transform: translateX(-50%)
+
+}
+.progress-wrapper .progress {
+    background-color:green;
+    width:0%;
+    padding: 2px 0px 2px 0px;
+    border-radius: 10px
+
+
+}
+
 .alert {
   color: red
 
