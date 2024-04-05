@@ -86,7 +86,7 @@ def home():
     if request.method == "POST" and request.files:
         if request.files:
             filename = secure_filename(request.files['file1'].filename)
-            request.files['file1'].save('temp/uploads/' + filename)
+            request.files['file1'].save('users_loaded_files/' + filename)
             print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
         else:
             error = 'Choose file to upload'
