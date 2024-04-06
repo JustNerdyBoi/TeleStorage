@@ -11,7 +11,8 @@
 
 }
 .progress-wrapper .progress {
-    background-color:rgb(4, 238, 255);
+    color: white;
+    background-color: rgb(51, 51, 51);
     width:0%;
     padding: 2px 0px 2px 0px;
     border-radius: 10px

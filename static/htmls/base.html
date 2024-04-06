@@ -12,18 +12,19 @@
 
 <body data-path-to-root="../" data-include-products="false" class="u-body u-xl-mode" data-lang="ru">
 <header class="u-black u-clearfix u-header u-header" id="sec-a7a0" style="display: flex">
-        <a href="/" class="u-image u-logo u-opacity u-opacity-65 u-image-1" data-image-width="1920"
-           data-image-height="1200">
-            <img src="static/img/logo.jpeg" class="u-logo-image u-logo-image-1">
-        </a>
-        <p style="float: right; transform: translate(-55px, 8px);">
-            {{ current_user.login }}
-        </p>
-        {% if current_user.is_authenticated %}
-        <a class="u-border-2 u-border-white u-btn u-button-style u-hover-white u-text-hover-black" style="float: right; transform: translate(-25%, -5%);"
-           href="/logout">Logout
-        </a>
-        {% endif %}
+    <a href="/" class="u-image u-logo u-opacity u-opacity-65 u-image-1" data-image-width="1920"
+       data-image-height="1200">
+        <img src="static/img/logo.jpeg" class="u-logo-image u-logo-image-1">
+    </a>
+    <p style="float: right; transform: translate(-55px, 8px);">
+        {{ current_user.login }}
+    </p>
+    {% if current_user.is_authenticated %}
+    <a class="u-border-2 u-border-white u-btn u-button-style u-hover-white u-text-hover-black"
+       style="float: right; transform: translate(-25%, -5%); border-radius: 10px;"
+       href="/logout">Logout
+    </a>
+    {% endif %}
 
 </header>
 <main role="main" class="container">
