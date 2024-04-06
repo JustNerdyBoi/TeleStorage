@@ -34,6 +34,9 @@
         request.open('post', '/home');
         request.timeout = 45000;
         request.send(formdata);
+        request.addEventListener("load", function() {
+            window.location.href = "/home";
+        });
     }
 </script>
 <form method="post" enctype="multipart/form-data" class="u-align-center">
