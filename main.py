@@ -6,6 +6,8 @@ from flask_login import LoginManager, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from data import db_session
 from data.user import User
+from data.file import File
+from pathlib import Path
 
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
@@ -82,14 +84,33 @@ def logout():
 def home():
     if not current_user.is_authenticated:
         return redirect('/')
+
+    db_sess = db_session.create_session()
     error = ''
+
     if request.method == "POST" and request.files:
         if request.files:
-            filename = secure_filename(request.files['file1'].filename)
-            request.files['file1'].save('temp/uploads/' + filename)
+            received_file = request.files['file1']
+
+            filename = secure_filename(received_file.filename)
+
+            file = File()
+            file.name = filename
+            file.user_id = current_user.id
+            db_sess.add(file)
+            db_sess.commit()
+
+            path_of_file = f"temp/{current_user.id}/{file.id}/file"
+            Path(path_of_file).mkdir(parents=True, exist_ok=True)
+            received_file.save(f'{path_of_file}/{filename}')
+
+            file.size = Path(f'{path_of_file}/{filename}').stat().st_size
+            db_sess.add(file)
+            db_sess.commit()
             print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
         else:
             error = 'Choose file to upload'
+
     return render_template('home.html', title='Home', current_user=current_user, error=error)
 
 
