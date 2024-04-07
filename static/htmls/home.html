@@ -56,12 +56,9 @@
     <div class="box">
     {% for item in files%}
     <div class="col-md6 border rounded">
-        <h2>{{item.name}}</h2>
+        <h3>{{item.name}}</h3>
         <div>
             {{item.size}}
-        </div>
-        <div>
-            Автор - {{item.user_id}}, Название - {{item.name}}
         </div>
     </div>
     </div>

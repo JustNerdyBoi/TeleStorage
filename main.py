@@ -94,24 +94,24 @@ def home():
 
             filename = secure_filename(received_file.filename)
 
-            file = File()
-            file.name = filename
-            file.user_id = current_user.id
-            db_sess.add(file)
+            uploaded_file = File()
+            uploaded_file.name = filename
+            uploaded_file.user_id = current_user.id
+            db_sess.add(uploaded_file)
             db_sess.commit()
 
-            path_of_file = f"temp/{current_user.id}/{file.id}/file"
+            path_of_file = f"temp/{current_user.id}/{uploaded_file.id}/file"
             Path(path_of_file).mkdir(parents=True, exist_ok=True)
             received_file.save(f'{path_of_file}/{filename}')
 
-            file.size = Path(f'{path_of_file}/{filename}').stat().st_size
-            db_sess.add(file)
+            uploaded_file.size = resources.convert_size(Path(f'{path_of_file}/{filename}').stat().st_size)
+            db_sess.add(uploaded_file)
             db_sess.commit()
             print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
         else:
             error = 'Choose file to upload'
 
-    files = db_sess.query(File).filter(File.user_id == current_user.id)
+    files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, error=error, files=files)
 
 
