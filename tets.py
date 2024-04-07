@@ -9,6 +9,8 @@ from data.user import User
 from data.file import File
 from pathlib import Path
 
+
+flag = 1
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
 
@@ -111,13 +113,20 @@ def home():
         else:
             error = 'Choose file to upload'
 
-    files = db_sess.query(File).filter(File.user_id == current_user.id)
-    return render_template('home.html', title='Home', current_user=current_user, error=error, files=files)
+    return render_template('home.html', title='Home', current_user=current_user, error=error)
+
+
+
+@app.route("/file")
+def index():
+    db_sess = db_session.create_session()
+    files = db_sess.query(File)
+    return render_template("test.html", files=files)
 
 
 def main():
     db_session.global_init("db/base.db")  # инициация бдl
-    app.run(port=8000, host='127.0.0.1') 
+    app.run(port=8000, host='127.0.0.1')
 
 
 if __name__ == '__main__':
