@@ -43,7 +43,7 @@
 <form method="post" enctype="multipart/form-data" class="u-align-center">
     <h3>Upload a file:</h3>
     <div class="element"> <input id="file1" type="file"> </div>
-    <div class="element"> <button class="button" type="button" onclick="postFile()">Upload File</button> </div>
+    <div class="element"> <button class="button_submit" type="button" onclick="postFile()">Upload File</button> </div>
     <div class="alert alert-danger" role="alert">
         {{ error }}
     </div>
@@ -52,18 +52,21 @@
     </div>
 </form>
 <form class="u-align-center">
-    <h3>Files</h3>
-    <div class="box">
     {% for item in files%}
-    <div class="col-md6 border rounded">
-        <h3>{{item.name}}</h3>
-        <div>
-            {{item.size}}
+    <div class="box_for_file">
+        <div class="u-align-left">
+        <h4>Name: <font color=#9e9e9e> {{item.name}} </font> 
+            <button class="button_operate_files" href="/"> Download </button> 
+            <button class="button_operate_files" href="/"> Delete </button>
+        
+        
+        </h4>
+        <h4>Size: <font color=#9e9e9e> {{item.size}} </font> </h4>
         </div>
+
     </div>
-    </div>
+
     {% endfor %}
-    
 
 </form>
 {% endblock %}
