@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect
 from flask_restful import Api
 import resources
 from hashlib import sha3_256
-from flask_login import LoginManager, login_user, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from data import db_session
 from data.user import User
@@ -104,20 +104,31 @@ def home():
             Path(path_of_file).mkdir(parents=True, exist_ok=True)
             received_file.save(f'{path_of_file}/{filename}')
 
-            uploaded_file.size = resources.convert_size(Path(f'{path_of_file}/{filename}').stat().st_size)
-            db_sess.add(uploaded_file)
+            bytesize = Path(f'{path_of_file}/{filename}').stat().st_size
+
+            uploaded_file.size = resources.convert_size(bytesize)
+            user = db_sess.query(User).filter(User.id == current_user.id).first()
+            user.used_storage += bytesize
             db_sess.commit()
+
             print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
         else:
             error = 'Choose file to upload'
 
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
-    return render_template('home.html', title='Home', current_user=current_user, error=error, files=files)
+    return render_template('home.html', title='Home', current_user=current_user, error=error, files=files,
+                           used_storage=resources.convert_size(current_user.used_storage))
+
+
+@login_required
+@app.route("/delete/<file_id>", methods=['POST', 'GET'])
+def delete(file_id):
+    print(file_id)
 
 
 def main():
     db_session.global_init("db/base.db")  # инициация бдl
-    app.run(port=8000, host='127.0.0.1') 
+    app.run(port=8000, host='127.0.0.1')
 
 
 if __name__ == '__main__':
