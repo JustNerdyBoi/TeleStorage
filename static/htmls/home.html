@@ -52,18 +52,34 @@
     </div>
 </form>
 <form class="u-align-left">
-    <h2>Used storage - {{used_storage}}</h2>
+    <div class="data_used_label">
+        <h3>
+            <font color=#9e9e9e> Usade storage: </font> {{used_storage}}
+            <button class="button_delete_mode" href="/"> Delete mode </button>
+        </h3>
+    </div>
+
     {% for item in files%}
     <div class="box_for_file">
-        <div class="u-align-left">
-        <h4>Name: <font color=#9e9e9e> {{item.name}} </font>
-            <button class="button_operate_files" href="/"> Download </button>
-            <button class="button_operate_files" href="/"> Delete </button>
 
-
-        </h4>
-        <h4>Size: <font color=#9e9e9e> {{item.size}} </font> </h4>
+        <div class="file_name">
+            <h4>
+                <font color=#9e9e9e> Name: </font>
+                <font color=#000000> {{item.name}} </font>
+            </h4>
         </div>
+        <button class="button_operate_files" href="/"> Download </button>
+        {% if delet_mode_selected %}
+        <button class="button_operate_files" href="/"> Delete </button>
+        {% endif%}
+
+
+        <h4>
+            <font color=#9e9e9e> Size: </font>
+            <font color=#000000> {{item.size}} </font>
+        </h4>
+
+
 
     </div>
 

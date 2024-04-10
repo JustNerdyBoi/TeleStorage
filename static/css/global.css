@@ -1,6 +1,38 @@
+.button_delete_mode{
+  margin-bottom: -500px;
+  margin-left: 60px;
+
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  background: #f36969;
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 16px;  
+  transition: background .2s ease-in-out;
+}
+.button_delete_mode:hover {
+  background-color: rgb(226, 0, 0);
+  }
+
+
+
+.data_used_label {
+  margin-left: 50px;
+  margin-bottom: 20px;
+}
+
+
+.file_name {
+  margin-right: 20px;
+  margin-left: 20px;
+  float: left;
+}
+
 .button_operate_files {
-  margin-right: 8px;
-  margin-left: 8px;
+  margin-top: 10px;
+  margin-right: 60px;
+  
   float: right;
   appearance: none;
   border: 0;

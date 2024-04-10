@@ -117,7 +117,8 @@ def home():
 
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, error=error, files=files,
-                           used_storage=resources.convert_size(current_user.used_storage))
+                           used_storage=resources.convert_size(current_user.used_storage),
+                           delet_mode_selected=0)
 
 
 @login_required
@@ -128,7 +129,7 @@ def delete(file_id):
 
 def main():
     db_session.global_init("db/base.db")  # инициация бдl
-    app.run(port=8000, host='127.0.0.1')
+    app.run(host='127.0.0.1', port=8000, threaded=True)
 
 
 if __name__ == '__main__':
