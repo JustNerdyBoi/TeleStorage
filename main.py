@@ -8,6 +8,7 @@ from data import db_session
 from data.user import User
 from data.file import File
 from pathlib import Path
+from shutil import rmtree
 
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
@@ -86,9 +87,12 @@ def home():
         return redirect('/')
 
     db_sess = db_session.create_session()
-    error = ''
+    del_mod = 0
 
-    if request.method == "POST" and request.files:
+    if request.method == "POST":
+        if 'delete_mode_button' in request.form:
+            del_mod = 1
+
         if request.files:
             received_file = request.files['file1']
 
@@ -106,25 +110,40 @@ def home():
 
             bytesize = Path(f'{path_of_file}/{filename}').stat().st_size
 
-            uploaded_file.size = resources.convert_size(bytesize)
+            uploaded_file.displaysize = resources.convert_size(bytesize)
+            uploaded_file.size = bytesize
             user = db_sess.query(User).filter(User.id == current_user.id).first()
             user.used_storage += bytesize
             db_sess.commit()
 
             print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
-        else:
-            error = 'Choose file to upload'
 
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
-    return render_template('home.html', title='Home', current_user=current_user, error=error, files=files,
+    return render_template('home.html', title='Home', current_user=current_user, files=files,
                            used_storage=resources.convert_size(current_user.used_storage),
-                           delet_mode_selected=0)
+                           delet_mode_selected=del_mod)
 
 
-@login_required
 @app.route("/delete/<file_id>", methods=['POST', 'GET'])
+@login_required
 def delete(file_id):
-    print(file_id)
+    db_sess = db_session.create_session()
+    file = db_sess.query(File).filter(File.user_id == current_user.id).filter(File.id == file_id).first()
+    if file:
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        user.used_storage -= int(file.size)
+
+        db_sess.delete(file)
+
+        db_sess.commit()
+        print(f'Removed from database file {file_id}')
+
+    path_to_temp_file = (Path.cwd() / 'temp' / str(current_user.id) / file_id)
+    if path_to_temp_file.exists():
+        rmtree(path_to_temp_file)
+        print(f'Removed directory {path_to_temp_file}')
+
+    return redirect('/home')
 
 
 def main():

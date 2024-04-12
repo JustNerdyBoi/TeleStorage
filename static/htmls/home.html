@@ -8,7 +8,7 @@
     <title>TeleStorage - {{ title }}</title>
     <link rel="stylesheet" href="static/css/global.css" media="screen">
     <link id="u-theme-google-font" rel="stylesheet"
-        href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
+          href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
 <script>
@@ -42,48 +42,45 @@
 </script>
 <form method="post" enctype="multipart/form-data" class="u-align-center">
     <h3>Upload a file:</h3>
-    <div class="element"> <input id="file1" type="file"> </div>
-    <div class="element"> <button class="button_submit" type="button" onclick="postFile()">Upload File</button> </div>
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
+    <div class="element"><input id="file1" type="file"></div>
+    <div class="element">
+        <button class="button_submit" type="button" onclick="postFile()">Upload File</button>
     </div>
     <div class="progress-wrapper">
         <div id="progress-bar-file1" class="progress"></div>
     </div>
 </form>
-<form class="u-align-left">
+<form class="u-align-left" method="post">
     <div class="data_used_label">
         <h3>
-            <font color=#9e9e9e> Usade storage: </font> {{used_storage}}
-            <button class="button_delete_mode" href="/"> Delete mode </button>
+            <font color=#9e9e9e> Used storage: </font> {{used_storage}}
+            {% if not delet_mode_selected %}
+            <input type="submit" class="button_delete_mode" name="delete_mode_button" value="Delete mode">
+            {% endif %}
         </h3>
     </div>
-
-    {% for item in files%}
-    <div class="box_for_file">
-
-        <div class="file_name">
-            <h4>
-                <font color=#9e9e9e> Name: </font>
-                <font color=#000000> {{item.name}} </font>
-            </h4>
-        </div>
-        <button class="button_operate_files" href="/"> Download </button>
-        {% if delet_mode_selected %}
-        <button class="button_operate_files" href="/"> Delete </button>
-        {% endif%}
-
-
-        <h4>
-            <font color=#9e9e9e> Size: </font>
-            <font color=#000000> {{item.size}} </font>
-        </h4>
-
-
-
-    </div>
-
-    {% endfor %}
-
 </form>
+
+{% for item in files%}
+<div class="box_for_file">
+
+    <div class="file_name">
+        <h4>
+            <font color=#9e9e9e> Name: </font>
+            <font color=#000000> {{item.name}} </font>
+        </h4>
+    </div>
+    <button class="button_operate_files" onclick="location.href='/logout'">Download</button>
+    {% if delet_mode_selected %}
+    <button class="button_operate_files" onclick="location.href='/delete/{{item.id}}'">Delete</button>
+    {% endif %}
+
+
+    <h4>
+        <font color=#9e9e9e> Size: </font>
+        <font color=#000000> {{item.displaysize}} </font>
+    </h4>
+</div>
+{% endfor %}
+
 {% endblock %}

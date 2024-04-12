@@ -1,5 +1,4 @@
 import sqlalchemy
-from sqlalchemy import orm
 from .db_session import SqlAlchemyBase
 
 
@@ -10,3 +9,4 @@ class File(SqlAlchemyBase):
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     name = sqlalchemy.Column(sqlalchemy.String)
     size = sqlalchemy.Column(sqlalchemy.String)
+    displaysize = sqlalchemy.Column(sqlalchemy.String)
