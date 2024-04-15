@@ -21,6 +21,8 @@ api.add_resource(services.SplitAndUpload, '/splitandupload')
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+del_mod = 0
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -86,15 +88,16 @@ def logout():
 
 @app.route("/home", methods=['POST', 'GET'])
 def home():
+    global del_mod
     if not current_user.is_authenticated:
         return redirect('/')
 
     db_sess = db_session.create_session()
-    del_mod = 0
+
 
     if request.method == "POST":
         if 'delete_mode_button' in request.form:
-            del_mod = 1
+            del_mod = not del_mod
 
         if request.files:
             received_file = request.files['file1']
