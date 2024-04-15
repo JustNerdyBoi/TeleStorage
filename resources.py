@@ -1,37 +1,28 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired
+from requests import post
+from config import read_buffer_size, chat_id, bot_tokens
 import math
 import pathlib
 
-read_buffer_size = 1024
-chunk_size = 2 ** 20 * 25  # 25 megabytes
+current_uploading = [0] * len(bot_tokens)
 
 
-def _chunk_file(file, extension):
-    current_chunk_size = 0
-    current_chunk = 1
-    done_reading = False
-    while not done_reading:
-        with open(f'{str(current_chunk).rjust(8, "0")}{extension}.chk', 'ab') as chunk:
-            while True:
-                bfr = file.read(read_buffer_size)
-                if not bfr:
-                    done_reading = True
-                    break
+def upload_by_bot(bot, chunk_path, bot_number):
+    message_id = None
+    while message_id is None:
+        try:
+            chunk = open(chunk_path, 'rb')
+            message_id = bot.send_document(chat_id, chunk, timeout=10)
+            chunk.close()
+        except:
+            print(f'Retrying bot {bot_number + 1} task')
+    global current_uploading
+    current_uploading[bot_number] -= 1
 
-                chunk.write(bfr)
-                current_chunk_size += len(bfr)
-                if current_chunk_size + read_buffer_size > chunk_size:
-                    current_chunk += 1
-                    current_chunk_size = 0
-                    break
-
-
-def split_file(filepath):
-    with open(filepath, 'rb') as file:
-        print(file)
-        _chunk_file(file, pathlib.Path(filepath).suffix)
+    print(f'Uploading {chunk_path}, msgid:{message_id.id} - done by bot {bot_number + 1},'
+          f' load of bots - {current_uploading}')
 
 
 def join_file(path):
@@ -59,6 +50,10 @@ def convert_size(size_bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return "%s %s" % (s, size_name[i])
+
+
+def request_task(url, json):
+    post(url, json=json, timeout=(10, 1200))
 
 
 class LoginForm(FlaskForm):

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect
+import threading
 from flask_restful import Api
 import resources
 from hashlib import sha3_256
@@ -9,11 +10,13 @@ from data.user import User
 from data.file import File
 from pathlib import Path
 from shutil import rmtree
+import services
 
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
 
 api = Api(app, catch_all_404s=True)
+api.add_resource(services.SplitAndUpload, '/splitandupload')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -118,6 +121,11 @@ def home():
 
             print(f'Got file from {current_user.login} (id:{current_user.id}) - {filename}')
 
+            threading.Thread(target=resources.request_task,
+                             args=('http://localhost:8000/splitandupload', {'user_id': current_user.id,
+                                                                            'file_id': uploaded_file.id,
+                                                                            'file_path': f'{path_of_file}/{filename}'})).start()
+
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, files=files,
                            used_storage=resources.convert_size(current_user.used_storage),
@@ -132,6 +140,8 @@ def delete(file_id):
     if file:
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         user.used_storage -= int(file.size)
+        if user.used_storage < 0:
+            user.used_storage = 0
 
         db_sess.delete(file)
 
@@ -147,7 +157,7 @@ def delete(file_id):
 
 
 def main():
-    db_session.global_init("db/base.db")  # инициация бдl
+    db_session.global_init("db/base.db")  # инициация бд
     app.run(host='127.0.0.1', port=8000, threaded=True)
 
 
