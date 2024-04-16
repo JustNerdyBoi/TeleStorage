@@ -94,7 +94,6 @@ def home():
 
     db_sess = db_session.create_session()
 
-
     if request.method == "POST":
         if 'delete_mode_button' in request.form:
             del_mod = not del_mod
@@ -127,7 +126,9 @@ def home():
             threading.Thread(target=resources.request_task,
                              args=('http://localhost:8000/splitandupload', {'user_id': current_user.id,
                                                                             'file_id': uploaded_file.id,
-                                                                            'file_path': f'{path_of_file}/{filename}'})).start()
+                                                                            'file_path': f'{path_of_file}/{filename}',
+                                                                            'file_size': bytesize})).start()
+
 
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, files=files,

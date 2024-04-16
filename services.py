@@ -2,20 +2,21 @@ from flask_restful import Resource
 from flask import request
 import pathlib
 import resources
-from config import read_buffer_size, chunk_size, bot_tokens, uploading_limit_by_bot
-import telebot
-from shutil import rmtree
+from config import read_buffer_size, chunk_size, uploading_limit_by_bot
+from math import ceil
 import threading
+from data import db_session
 
 
 class SplitAndUpload(Resource):
     def post(self):
-        bots = []
-        for token in bot_tokens:
-            bots.append(telebot.TeleBot(token))
-
+        db_sess = db_session.create_session()
         file_data = request.json
         filepath = file_data['file_path']
+
+        resources.upload_tasks.append({'task_name': file_data['file_id'],
+                                       'expected_chunks': ceil(file_data['file_size'] / chunk_size),
+                                       'progress': 0})
 
         with open(filepath, 'rb') as file:
             path = pathlib.Path(filepath)
@@ -43,13 +44,14 @@ class SplitAndUpload(Resource):
                             break
                 wait_for_bot = True
                 while wait_for_bot:
-                    for bot_number in range(len(resources.current_uploading)):
-                        if resources.current_uploading[bot_number] < uploading_limit_by_bot:
+                    for bot_number in range(len(resources.bots)):
+                        if resources.bots[bot_number]['load'] < uploading_limit_by_bot:
                             wait_for_bot = False
                             break
-                current_bot = bots[bot_number]
-                resources.current_uploading[bot_number] += 1
-                print(
-                    f'Starting upload task ({chunk_path}) for bot {bot_number + 1},'
-                    f' load of bots - {resources.current_uploading}')
-                threading.Thread(target=resources.upload_by_bot, args=(current_bot, chunk_path, bot_number)).start()
+                current_bot = resources.bots[bot_number]
+                resources.bots[bot_number]['load'] += 1
+                print(f'Starting upload task ({chunk_path}) for bot {bot_number + 1}')
+                threading.Thread(
+                    target=resources.upload_by_bot,
+                    args=(current_bot, chunk_path, bot_number, file_data['file_id'], db_sess, parent_dir)
+                ).start()

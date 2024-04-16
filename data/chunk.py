@@ -11,5 +11,4 @@ class Chunk(SqlAlchemyBase):
 
     chat_id = sqlalchemy.Column(sqlalchemy.Integer)
     message_id = sqlalchemy.Column(sqlalchemy.Integer)
-
-    chunk_number = sqlalchemy.Column(sqlalchemy.Integer)
+    token = sqlalchemy.Column(sqlalchemy.String)
