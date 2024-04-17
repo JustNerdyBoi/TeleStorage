@@ -10,7 +10,7 @@ from data.chunk import Chunk
 from shutil import rmtree
 
 bots = []
-upload_tasks = []
+upload_tasks = [] #отсюда дёргаю
 for token in bot_tokens:
     bots.append({'bot': telebot.TeleBot(token), 'load': 0})
 
