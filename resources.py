@@ -10,9 +10,36 @@ from data.chunk import Chunk
 from shutil import rmtree
 
 bots = []
-upload_tasks = []
+bot_tasks = []
 for token in bot_tokens:
     bots.append({'bot': telebot.TeleBot(token), 'load': 0})
+
+
+def download_by_bot(bot, bot_number, file_id, path_of_file, chunk):
+    downloaded_file = None
+    file_id_info = bot['bot'].get_file(chunk.chat_file_id)
+    while downloaded_file is None:
+        try:
+            downloaded_file = bot['bot'].download_file(file_id_info.file_path)
+        except:
+            print(f'Retrying bot {bot_number + 1} task')
+    print(f'Downloading {chunk.file_name} of {file_id} done')
+    with open(f"{path_of_file}/chunks/{chunk.file_name}", 'wb') as new_file:
+        new_file.write(downloaded_file)
+
+    global bots
+    global bot_tasks
+
+    bots[bot_number]['load'] -= 1
+    for i in range(len(bot_tasks)):
+        current_task = bot_tasks[i]
+        if current_task['task_name'] == file_id and current_task['mode'] == 'download':
+            current_task['progress'] += 1
+            break
+
+    if current_task["progress"] == current_task["expected_chunks"]:
+        del bot_tasks[i]
+        print(f'Downloading {file_id} done, remaining bot tasks: {bot_tasks}')
 
 
 def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
@@ -25,28 +52,31 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
         except:
             print(f'Retrying bot {bot_number + 1} task')
     global bots
-    global upload_tasks
+    global bot_tasks
 
-    bots[bot_number]['load'] -= 1
-    for i in range(len(upload_tasks)):
-        if upload_tasks[i]['task_name'] == file_id:
-            upload_tasks[i]['progress'] += 1
+    for i in range(len(bot_tasks)):
+        current_task = bot_tasks[i]
+        if current_task['task_name'] == file_id and current_task['mode'] == 'upload':
+            current_task['progress'] += 1
             break
 
     uploaded_chunk = Chunk()
-    uploaded_chunk.chat_id = message.chat.id
-    uploaded_chunk.message_id = message.id
+    uploaded_chunk.chat_file_id = message.document.file_id
+    uploaded_chunk.file_name = chunk_path.split('/')[-1]
     uploaded_chunk.file_id = file_id
     uploaded_chunk.token = bot['bot'].token
     db_sess.add(uploaded_chunk)
-    db_sess.commit()
-    current_task = upload_tasks[i]
 
     print(f'Uploading {chunk_path}, msgid:{message.id} - done by bot {bot_number + 1}, '
           f'progress {current_task["progress"]}/{current_task["expected_chunks"]}')
 
+    bots[bot_number]['load'] -= 1
+
     if current_task["progress"] == current_task["expected_chunks"]:
-        print(f'Uploading task {current_task["task_name"]} done, deleting local files')
+        del bot_tasks[i]
+        print(f'Uploading {file_id} done, deleting local files, remaining bot tasks: {bot_tasks}')
+        db_sess.commit()
+        db_sess.close()
         rmtree(parent_dir)
 
 

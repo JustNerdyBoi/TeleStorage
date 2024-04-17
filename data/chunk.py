@@ -9,6 +9,7 @@ class Chunk(SqlAlchemyBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     file_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("files.id"))
 
-    chat_id = sqlalchemy.Column(sqlalchemy.Integer)
-    message_id = sqlalchemy.Column(sqlalchemy.Integer)
+    chat_file_id = sqlalchemy.Column(sqlalchemy.String)
+    file_name = sqlalchemy.Column(sqlalchemy.String)
+
     token = sqlalchemy.Column(sqlalchemy.String)

@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect
 import threading
 from flask_restful import Api
+
+import config
 import resources
 from hashlib import sha3_256
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
@@ -8,6 +10,7 @@ from werkzeug.utils import secure_filename
 from data import db_session
 from data.user import User
 from data.file import File
+from data.chunk import Chunk
 from pathlib import Path
 from shutil import rmtree
 import services
@@ -17,7 +20,6 @@ app.secret_key = 'secretkeychangeonrelease'
 
 api = Api(app, catch_all_404s=True)
 api.add_resource(services.SplitAndUpload, '/splitandupload')
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -157,6 +159,34 @@ def delete(file_id):
         rmtree(path_to_temp_file)
         print(f'Removed directory {path_to_temp_file}')
 
+    return redirect('/home')
+
+@app.route("/download/<file_id>", methods=['POST', 'GET'])
+@login_required
+def download(file_id):
+    db_sess = db_session.create_session()
+    path_of_file = f"temp/{current_user.id}/{file_id}"
+    chunks = list(db_sess.query(Chunk).filter(Chunk.file_id == file_id))
+
+    resources.bot_tasks.append({'task_name': file_id,
+                                'mode': 'download',
+                                'expected_chunks': len(chunks),
+                                'progress': 0})
+    while chunks:
+        wait_for_bot = True
+        while wait_for_bot:
+            for chunk in chunks:
+                for bot_number in range(len(resources.bots)):
+                    bot = resources.bots[bot_number]
+                    if bot['bot'].token == chunk.token and bot['load'] < config.uploading_limit_by_bot:
+                        wait_for_bot = False
+                        break
+
+        threading.Thread(
+            target=resources.download_by_bot,
+            args=(bot, bot_number, file_id, path_of_file, chunk)
+        ).start()
+        chunks.remove(chunk)
     return redirect('/home')
 
 

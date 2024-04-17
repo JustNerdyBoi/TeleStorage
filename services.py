@@ -6,6 +6,7 @@ from config import read_buffer_size, chunk_size, uploading_limit_by_bot
 from math import ceil
 import threading
 from data import db_session
+from data.chunk import Chunk
 
 
 class SplitAndUpload(Resource):
@@ -14,9 +15,10 @@ class SplitAndUpload(Resource):
         file_data = request.json
         filepath = file_data['file_path']
 
-        resources.upload_tasks.append({'task_name': file_data['file_id'],
-                                       'expected_chunks': ceil(file_data['file_size'] / chunk_size),
-                                       'progress': 0})
+        resources.bot_tasks.append({'task_name': file_data['file_id'],
+                                    'mode': 'upload',
+                                    'expected_chunks': ceil(file_data['file_size'] / chunk_size),
+                                    'progress': 0})
 
         with open(filepath, 'rb') as file:
             path = pathlib.Path(filepath)
