@@ -138,11 +138,11 @@ def home():
                                                                             'file_size': bytesize})).start()
 
             resources.bot_tasks.append({'task_name': uploaded_file.id,
-                                        'mode': 'upload',  # type of task
+                                        'mode': 'Uploading',  # type of task
                                         'expected_chunks': ceil(bytesize / chunk_size),
                                         'progress': 0})
 
-    tasks = [i["task_name"] for i in resources.bot_tasks]
+    tasks = {i["task_name"]:i["mode"] for i in resources.bot_tasks}
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, files=files,
                            used_storage=resources.convert_size(current_user.used_storage),
