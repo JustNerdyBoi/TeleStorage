@@ -69,7 +69,7 @@
         </h4>
     </div>
     {% if item.id not in tasks %}
-        <button class="button_operate_files" onclick="location.href='/logout'">Download</button>
+        <button class="button_operate_files" onclick="location.href='/download/{{item.id}}'">Download</button>
         {% if delet_mode_selected %}
         <button class="button_operate_files" onclick="location.href='/delete/{{item.id}}'">Delete</button>
         {% endif %}

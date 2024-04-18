@@ -1,4 +1,3 @@
-import threading
 from data.db_session import create_session
 from data.file import File
 from flask_wtf import FlaskForm
@@ -17,12 +16,14 @@ bot_tasks = []
 for token in bot_tokens:
     bots.append({'bot': telebot.TeleBot(token), 'load': 0})
 
+
 def is_file_operating(file_id):
     tasks = [i["task_name"] for i in bot_tasks]
     if file_id in tasks:
-        return False
-    return True
-    
+        return True
+    return False
+
+
 def download_by_bot(bot, bot_number, file_id, path_of_file, chunk):
     downloaded_file = None
     file_id_info = bot['bot'].get_file(chunk.chat_file_id)
