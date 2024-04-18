@@ -6,8 +6,6 @@ from config import read_buffer_size, chunk_size, uploading_limit_by_bot
 from math import ceil
 import threading
 from data import db_session
-from data.chunk import Chunk
-
 
 class SplitAndUpload(Resource):
     def post(self):
