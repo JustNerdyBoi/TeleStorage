@@ -14,7 +14,7 @@ class SplitAndUpload(Resource):
         filepath = file_data['file_path']
 
         resources.bot_tasks.append({'task_name': file_data['file_id'],
-                                    'mode': 'upload',  # type of task
+                                    'mode': "Uploading",  # type of task
                                     'expected_chunks': ceil(file_data['file_size'] / chunk_size),
                                     'progress': 0})
 

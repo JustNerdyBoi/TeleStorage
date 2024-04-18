@@ -69,14 +69,14 @@
         </h4>
     </div>
     {% if item.id not in tasks %}
-    <button class="button_operate_files" onclick="location.href='/logout'">Download</button>
-    {% if delet_mode_selected %}
-    <button class="button_operate_files" onclick="location.href='/delete/{{item.id}}'">Delete</button>
-    {% endif %}
-    {%else %}
-    <h3>
-        <font color=#9e9e9e> azazazaza </font>
-    </h3>
+        <button class="button_operate_files" onclick="location.href='/logout'">Download</button>
+        {% if delet_mode_selected %}
+        <button class="button_operate_files" onclick="location.href='/delete/{{item.id}}'">Delete</button>
+        {% endif %}
+        {%else %}
+        <h3>
+            <div class="status_of_file"><font color=#9e9e9e> Status: </font> <font color=#000000> {{tasks[item.id]}}</font></div>
+        </h3>
     {% endif %}
 
 

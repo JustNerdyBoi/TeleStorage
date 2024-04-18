@@ -14,7 +14,12 @@ bot_tasks = []
 for token in bot_tokens:
     bots.append({'bot': telebot.TeleBot(token), 'load': 0})
 
-
+def is_file_operating(file_id):
+    tasks = [i["task_name"] for i in bot_tasks]
+    if file_id in tasks:
+        return False
+    return True
+    
 def download_by_bot(bot, bot_number, file_id, path_of_file, chunk):
     downloaded_file = None
     file_id_info = bot['bot'].get_file(chunk.chat_file_id)
@@ -56,7 +61,7 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
 
     for i in range(len(bot_tasks)):
         current_task = bot_tasks[i]
-        if current_task['task_name'] == file_id and current_task['mode'] == 'upload':
+        if current_task['task_name'] == file_id and current_task['mode'] == 'Uploading':
             current_task['progress'] += 1
             break
 

@@ -137,7 +137,8 @@ def home():
                                                                             'file_path': f'{path_of_file}/{filename}',
                                                                             'file_size': bytesize})).start()
 
-    tasks = [i["task_name"] for i in resources.bot_tasks]
+    tasks = {i["task_name"]:i["mode"] for i in resources.bot_tasks}
+    print(tasks)
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, files=files,
                            used_storage=resources.convert_size(current_user.used_storage),
@@ -147,6 +148,8 @@ def home():
 @app.route("/delete/<file_id>", methods=['POST', 'GET'])
 @login_required
 def delete(file_id):
+    if resources.is_file_operating(file_id=file_id):
+        return redirect("/home")
     db_sess = db_session.create_session()
     file = db_sess.query(File).filter(File.user_id == current_user.id).filter(File.id == file_id).first()
     if file:
@@ -171,6 +174,8 @@ def delete(file_id):
 @app.route("/download/<file_id>", methods=['POST', 'GET'])
 @login_required
 def download(file_id):
+    if resources.is_file_operating(file_id=file_id):
+        return redirect("/home")
     db_sess = db_session.create_session()
     path_of_file = f"temp/{current_user.id}/{file_id}"
     chunks = list(db_sess.query(Chunk).filter(Chunk.file_id == file_id))
