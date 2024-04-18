@@ -96,11 +96,11 @@ def home():
 
     db_sess = db_session.create_session()
 
-    print("--------------------------------------")
-    print([i["task_name"] for i in resources.upload_tasks])
-    print([i.id for i in db_sess.query(File).filter(File.user_id == current_user.id)[::-1]])
-    print(resources.bots)
-    print("--------------------------------------")
+    # print("--------------------------------------")
+    # print([i["task_name"] for i in resources.bot_tasks])
+    # print([i.id for i in db_sess.query(File).filter(File.user_id == current_user.id)[::-1]])
+    # print(resources.bots)
+    # print("--------------------------------------")
 
     if request.method == "POST":
         if 'delete_mode_button' in request.form:
@@ -109,7 +109,7 @@ def home():
         if request.files:
             received_file = request.files['file1']
 
-            filename = secure_filename(received_file.filename)
+            filename = received_file.filename
 
             uploaded_file = File()
             uploaded_file.name = filename
@@ -137,7 +137,7 @@ def home():
                                                                             'file_path': f'{path_of_file}/{filename}',
                                                                             'file_size': bytesize})).start()
 
-    tasks = [i["task_name"] for i in resources.upload_tasks]
+    tasks = [i["task_name"] for i in resources.bot_tasks]
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, files=files,
                            used_storage=resources.convert_size(current_user.used_storage),
@@ -166,6 +166,7 @@ def delete(file_id):
         print(f'Removed directory {path_to_temp_file}')
 
     return redirect('/home')
+
 
 @app.route("/download/<file_id>", methods=['POST', 'GET'])
 @login_required
