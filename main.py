@@ -181,7 +181,11 @@ def download(file_id):
     if resources.is_file_operating(file_id=file_id):
         return redirect("/home")
     db_sess = db_session.create_session()
+
     path_of_file = f"temp/{current_user.id}/{file_id}"
+    Path(path_of_file + '/file').mkdir(parents=True, exist_ok=True)
+    Path(path_of_file + '/chunks').mkdir(parents=True, exist_ok=True)
+
     chunks = list(db_sess.query(Chunk).filter(Chunk.file_id == file_id))
 
     resources.bot_tasks.append({'task_name': file_id,

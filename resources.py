@@ -1,3 +1,6 @@
+import threading
+from data.db_session import create_session
+from data.file import File
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired
@@ -34,8 +37,8 @@ def download_by_bot(bot, bot_number, file_id, path_of_file, chunk):
 
     global bots
     global bot_tasks
-
-    bots[bot_number]['load'] -= 1
+    if bots[bot_number]['load'] > 0:
+        bots[bot_number]['load'] -= 1
     for i in range(len(bot_tasks)):
         current_task = bot_tasks[i]
         if current_task['task_name'] == file_id and current_task['mode'] == 'download':
@@ -44,7 +47,8 @@ def download_by_bot(bot, bot_number, file_id, path_of_file, chunk):
 
     if current_task["progress"] == current_task["expected_chunks"]:
         del bot_tasks[i]
-        print(f'Downloading {file_id} done, remaining bot tasks: {bot_tasks}')
+        print(f'Downloading {file_id} done')
+        assemble_file(path_of_file, file_id)
 
 
 def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
@@ -53,9 +57,9 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
         try:
             chunk = open(chunk_path, 'rb')
             message = bot['bot'].send_document(chat_id, chunk, timeout=10)
-            chunk.close()
         except:
             print(f'Retrying bot {bot_number + 1} task')
+    chunk.close()
     global bots
     global bot_tasks
 
@@ -74,8 +78,8 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
 
     print(f'Uploading {chunk_path}, msgid:{message.id} - done by bot {bot_number + 1}, '
           f'progress {current_task["progress"]}/{current_task["expected_chunks"]}')
-
-    bots[bot_number]['load'] -= 1
+    if bots[bot_number]['load'] > 0:
+        bots[bot_number]['load'] -= 1
 
     if current_task["progress"] == current_task["expected_chunks"]:
         del bot_tasks[i]
@@ -85,14 +89,13 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
         rmtree(parent_dir)
 
 
-def join_file(path):
-    chunks = list(pathlib.Path(path).rglob('*.chk'))
+def assemble_file(path_of_file, file_id):
+    db_sess = create_session()
+    name = db_sess.query(File.name).filter(File.id == file_id).first()[0]
+    chunks = list(pathlib.Path(f"{path_of_file}/chunks").rglob('*.chk'))
     chunks.sort()
-    for i in chunks:
-        print(i)
-    extension = chunks[0].suffixes[0]
 
-    with open(f'join{extension}', 'ab') as file:
+    with open(f"{path_of_file}/file/{name}", 'ab') as file:
         for chunk in chunks:
             with open(chunk, 'rb') as piece:
                 while True:
@@ -100,6 +103,9 @@ def join_file(path):
                     if not bfr:
                         break
                     file.write(bfr)
+            piece.close()
+    print(f'File {file_id} assembled')
+    rmtree(f"{path_of_file}/chunks")
 
 
 def convert_size(size_bytes):

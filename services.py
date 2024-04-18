@@ -23,7 +23,7 @@ class SplitAndUpload(Resource):
             pathlib.Path(f'{parent_dir}/chunks').mkdir()
 
             while not done_reading:
-                chunk_path = f'{parent_dir}/chunks/{str(current_chunk).rjust(8, "0")}{path.suffix}.chk'
+                chunk_path = f'{parent_dir}/chunks/{str(current_chunk).rjust(8, "0")}.chk'
                 with open(chunk_path, 'ab') as chunk:
                     while True:
                         bfr = file.read(read_buffer_size)
