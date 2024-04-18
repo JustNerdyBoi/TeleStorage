@@ -3,20 +3,15 @@ from flask import request
 import pathlib
 import resources
 from config import read_buffer_size, chunk_size, uploading_limit_by_bot
-from math import ceil
 import threading
 from data import db_session
+
 
 class SplitAndUpload(Resource):
     def post(self):
         db_sess = db_session.create_session()
         file_data = request.json
         filepath = file_data['file_path']
-
-        resources.bot_tasks.append({'task_name': file_data['file_id'],
-                                    'mode': "Uploading",  # type of task
-                                    'expected_chunks': ceil(file_data['file_size'] / chunk_size),
-                                    'progress': 0})
 
         with open(filepath, 'rb') as file:
             path = pathlib.Path(filepath)
@@ -42,6 +37,7 @@ class SplitAndUpload(Resource):
                             current_chunk += 1
                             current_chunk_size = 0
                             break
+                chunk.close()
                 wait_for_bot = True
                 while wait_for_bot:
                     for bot_number in range(len(resources.bots)):
