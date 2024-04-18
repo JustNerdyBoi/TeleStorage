@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, redirect
 import threading
 from flask_restful import Api
-
+from math import ceil
 import config
 import resources
 from hashlib import sha3_256
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
-from werkzeug.utils import secure_filename
 from data import db_session
 from data.user import User
 from data.file import File
@@ -14,6 +13,7 @@ from data.chunk import Chunk
 from pathlib import Path
 from shutil import rmtree
 import services
+from config import chunk_size
 
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
@@ -136,6 +136,11 @@ def home():
                                                                             'file_id': uploaded_file.id,
                                                                             'file_path': f'{path_of_file}/{filename}',
                                                                             'file_size': bytesize})).start()
+
+            resources.bot_tasks.append({'task_name': uploaded_file.id,
+                                        'mode': 'upload',  # type of task
+                                        'expected_chunks': ceil(bytesize / chunk_size),
+                                        'progress': 0})
 
     tasks = [i["task_name"] for i in resources.bot_tasks]
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
