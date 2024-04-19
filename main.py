@@ -184,7 +184,6 @@ def delete(file_id):
 def download(file_id):
     if resources.is_file_operating(file_id):
         print('dnld abort')
-        return redirect("/home")
     db_sess = db_session.create_session()
 
     path_of_file = f"temp/{current_user.id}/{file_id}"
@@ -212,7 +211,7 @@ def download(file_id):
             args=(bot, bot_number, file_id, path_of_file, chunk)
         ).start()
         chunks.remove(chunk)
-    return redirect('/home')
+    return render_template('download_page.html')
 
 
 def main():
