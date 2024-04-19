@@ -96,7 +96,6 @@ def home():
         return redirect('/')
     db_sess = db_session.create_session()
 
-
     if request.method == "POST":
         if 'delete_mode_button' in request.form:
             del_mod = not del_mod
@@ -191,8 +190,9 @@ def download(file_id):
         dirlist = listdir(path_of_file + '/file')
         if dirlist:
             full_path = path_of_file + '/file/' + dirlist[0]
-            print('Sending file to client')
-            return send_file(full_path, as_attachment=True)
+            if int(Path(full_path).stat().st_size) == int(file_size[0]):
+                print('Sending file to client')
+                return send_file(full_path, as_attachment=True)
 
     Path(path_of_file + '/file').mkdir(parents=True, exist_ok=True)
     Path(path_of_file + '/chunks').mkdir(parents=True, exist_ok=True)
