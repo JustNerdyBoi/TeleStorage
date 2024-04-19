@@ -58,9 +58,10 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
         try:
             chunk = open(chunk_path, 'rb')
             message = bot['bot'].send_document(chat_id, chunk, timeout=10)
+            chunk.close()
         except:
+            chunk.close()
             print(f'Retrying bot {bot_number + 1} task')
-    chunk.close()
     global bots
     global bot_tasks
 
