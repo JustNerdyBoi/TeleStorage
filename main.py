@@ -141,7 +141,7 @@ def home():
                                         'expected_chunks': ceil(bytesize / chunk_size),
                                         'progress': 0})
 
-    tasks = {int(i["task_name"]):i["mode"] for i in resources.bot_tasks}
+    tasks = {int(i["task_name"]): i["mode"] for i in resources.bot_tasks}
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     return render_template('home.html', title='Home', current_user=current_user, files=files,
                            used_storage=resources.convert_size(current_user.used_storage),
@@ -163,7 +163,7 @@ def delete(file_id):
         user.used_storage -= int(file.size)
         if user.used_storage < 0:
             user.used_storage = 0
-        
+
         for chunk in chunks:
             db_sess.delete(chunk)
         db_sess.delete(file)
@@ -179,7 +179,7 @@ def delete(file_id):
     return redirect('/home')
 
 
-@app.route("/download/<file_id>", methods=['POST', 'GET'])
+@app.route("/download/<file_id>", methods=['POST', 'GET'])  # changes
 @login_required
 def download(file_id):
     if resources.is_file_operating(file_id):
