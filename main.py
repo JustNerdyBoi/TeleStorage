@@ -95,11 +95,6 @@ def home():
         return redirect('/')
     db_sess = db_session.create_session()
 
-    # print("--------------------------------------")
-    # print([i["task_name"] for i in resources.bot_tasks])
-    # print([i.id for i in db_sess.query(File).filter(File.user_id == current_user.id)[::-1]])
-    # print(resources.bots)
-    # print("--------------------------------------")
 
     if request.method == "POST":
         if 'delete_mode_button' in request.form:
