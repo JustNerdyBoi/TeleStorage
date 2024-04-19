@@ -156,12 +156,16 @@ def delete(file_id):
         return redirect("/home")
     db_sess = db_session.create_session()
     file = db_sess.query(File).filter(File.user_id == current_user.id).filter(File.id == file_id).first()
+    chunks = db_sess.query(Chunk).filter(Chunk.file_id == file.id).all()
+
     if file:
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         user.used_storage -= int(file.size)
         if user.used_storage < 0:
             user.used_storage = 0
-
+        
+        for chunk in chunks:
+            db_sess.delete(chunk)
         db_sess.delete(file)
 
         db_sess.commit()
