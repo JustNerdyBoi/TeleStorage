@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_file
 import threading
 from flask_restful import Api
 from math import ceil
@@ -14,6 +14,7 @@ from pathlib import Path
 from shutil import rmtree
 import services
 from config import chunk_size
+from os import listdir
 
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
@@ -177,11 +178,22 @@ def delete(file_id):
 @app.route("/download/<file_id>", methods=['POST', 'GET'])  # changes
 @login_required
 def download(file_id):
-    if resources.is_file_operating(file_id):
-        print('dnld abort')
     db_sess = db_session.create_session()
+    file_size = db_sess.query(File.size).filter(File.user_id == current_user.id).filter(File.id == file_id).first()
+    if not file_size:
+        return redirect('/home')
+
+    if resources.is_file_operating(file_id):
+        return render_template('download_page.html')
 
     path_of_file = f"temp/{current_user.id}/{file_id}"
+    if Path(path_of_file).exists():
+        dirlist = listdir(path_of_file + '/file')
+        if dirlist:
+            full_path = path_of_file + '/file/' + dirlist[0]
+            print('Sending file to client')
+            return send_file(full_path, as_attachment=True)
+
     Path(path_of_file + '/file').mkdir(parents=True, exist_ok=True)
     Path(path_of_file + '/chunks').mkdir(parents=True, exist_ok=True)
 
