@@ -1,20 +1,19 @@
-from flask import Flask, render_template, request, redirect, send_file, make_response
-import threading
-from flask_restful import Api
-from math import ceil
-import config
-import resources
-from hashlib import sha3_256
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from config import chunk_size, uploading_limit_by_bot
 from data import db_session
-from data.user import User
-from data.file import File
 from data.chunk import Chunk
+from data.file import File
+from data.user import User
+from flask import Flask, render_template, request, redirect, send_file, make_response
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_restful import Api
+from hashlib import sha3_256
+from math import ceil
+from os import listdir
 from pathlib import Path
 from shutil import rmtree
+import resources
 import services
-from config import chunk_size
-from os import listdir
+import threading
 
 app = Flask(__name__, template_folder="static/htmls")
 app.secret_key = 'secretkeychangeonrelease'
@@ -147,9 +146,9 @@ def home():
     tasks = {int(i["task_name"]): i["mode"] for i in resources.bot_tasks}
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
     response = make_response(render_template('home.html', title='Home',
-                                         current_user=current_user, files=files,
-                                         used_storage=resources.convert_size(current_user.used_storage),
-                                         delet_mode_selected=del_mod, tasks=tasks))
+                                             current_user=current_user, files=files,
+                                             used_storage=resources.convert_size(current_user.used_storage),
+                                             delet_mode_selected=del_mod, tasks=tasks))
     response.set_cookie('downloading_file_id', str(downloaded_file_id), expires=0)
     return response
 
@@ -199,7 +198,6 @@ def download(file_id):
     path_of_file = f"temp/{current_user.id}/{file_id}"
     if Path(path_of_file).exists():
         dirlist = listdir(path_of_file + '/file')
-        print(dirlist)
         if dirlist:
             full_path = path_of_file + '/file/' + dirlist[0]
             if int(Path(full_path).stat().st_size) == int(file.size):
@@ -221,7 +219,7 @@ def download(file_id):
             for chunk in chunks:
                 for bot_number in range(len(resources.bots)):
                     bot = resources.bots[bot_number]
-                    if bot['bot'].token == chunk.token and bot['load'] < config.uploading_limit_by_bot:
+                    if bot['bot'].token == chunk.token and bot['load'] < uploading_limit_by_bot:
                         wait_for_bot = False
                         break
         threading.Thread(
@@ -230,7 +228,7 @@ def download(file_id):
         ).start()
         chunks.remove(chunk)
 
-    response = make_response(render_template('download_page.html', title=f'Downloading {file.name}'))
+    response = make_response(render_template('download_page.html', title=str(file.name)))
     response.set_cookie("downloading_file_id", str(file_id),
                         max_age=60 * 60 * 24 * 365 * 2)
     return response

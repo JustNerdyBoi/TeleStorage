@@ -1,15 +1,15 @@
+from config import read_buffer_size, chat_id, bot_tokens
+from data.chunk import Chunk
 from data.db_session import create_session
 from data.file import File
 from flask_wtf import FlaskForm
+from requests import post
+from shutil import rmtree
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired
-from requests import post
-from config import read_buffer_size, chat_id, bot_tokens
 import math
 import pathlib
 import telebot
-from data.chunk import Chunk
-from shutil import rmtree
 
 bots = []
 bot_tasks = []

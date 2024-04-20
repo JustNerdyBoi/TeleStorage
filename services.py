@@ -1,10 +1,10 @@
-from flask_restful import Resource
+from config import read_buffer_size, chunk_size, uploading_limit_by_bot
+from data import db_session
 from flask import request
+from flask_restful import Resource
 import pathlib
 import resources
-from config import read_buffer_size, chunk_size, uploading_limit_by_bot
 import threading
-from data import db_session
 
 
 class SplitAndUpload(Resource):
