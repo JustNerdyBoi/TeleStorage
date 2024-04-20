@@ -23,7 +23,6 @@ api.add_resource(services.SplitAndUpload, '/splitandupload')
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-del_mod = 0
 
 
 @login_manager.user_loader
@@ -90,7 +89,7 @@ def logout():
 
 @app.route("/home", methods=['POST', 'GET'])
 def home():
-    global del_mod
+
     if not current_user.is_authenticated:
         return redirect('/')
     downloaded_file_id = str(request.cookies.get("downloading_file_id", 0))
@@ -104,8 +103,6 @@ def home():
     db_sess = db_session.create_session()
 
     if request.method == "POST":
-        if 'delete_mode_button' in request.form:
-            del_mod = not del_mod
 
         if request.files:
             received_file = request.files['file1']
@@ -148,7 +145,7 @@ def home():
     response = make_response(render_template('home.html', title='Home',
                                              current_user=current_user, files=files,
                                              used_storage=resources.convert_size(current_user.used_storage),
-                                             delet_mode_selected=del_mod, tasks=tasks))
+                                             delet_mode_selected=1, tasks=tasks))
     response.set_cookie('downloading_file_id', str(downloaded_file_id), expires=0)
     return response
 
@@ -235,9 +232,12 @@ def download(file_id):
 
 
 def main():
+    from waitress import serve
     db_session.global_init("db/base.db")  # инициация бд
-    app.run(host='127.0.0.1', port=8000, threaded=True)
+    serve(app, host="192.168.1.54", port=4040, threads=6)
+
 
 
 if __name__ == '__main__':
     main()
+
