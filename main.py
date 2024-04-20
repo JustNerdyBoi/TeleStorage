@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, send_file, make_response
 import threading
 from flask_restful import Api
 from math import ceil
@@ -94,6 +94,14 @@ def home():
     global del_mod
     if not current_user.is_authenticated:
         return redirect('/')
+    downloaded_file_id = str(request.cookies.get("downloading_file_id", 0))
+    if downloaded_file_id:
+        path_of_file = f"temp/{current_user.id}/{downloaded_file_id}"
+        if not resources.is_file_operating(downloaded_file_id) and Path(path_of_file).exists():
+            rmtree(path_of_file)
+            downloaded_file_id = 0
+            print(f'Deleting local file {downloaded_file_id}')
+
     db_sess = db_session.create_session()
 
     if request.method == "POST":
@@ -138,9 +146,12 @@ def home():
 
     tasks = {int(i["task_name"]): i["mode"] for i in resources.bot_tasks}
     files = db_sess.query(File).filter(File.user_id == current_user.id)[::-1]
-    return render_template('home.html', title='Home', current_user=current_user, files=files,
-                           used_storage=resources.convert_size(current_user.used_storage),
-                           delet_mode_selected=del_mod, tasks=tasks)
+    response = make_response(render_template('home.html', title='Home',
+                                         current_user=current_user, files=files,
+                                         used_storage=resources.convert_size(current_user.used_storage),
+                                         delet_mode_selected=del_mod, tasks=tasks))
+    response.set_cookie('downloading_file_id', str(downloaded_file_id), expires=0)
+    return response
 
 
 @app.route("/delete/<file_id>", methods=['POST', 'GET'])
@@ -178,8 +189,8 @@ def delete(file_id):
 @login_required
 def download(file_id):
     db_sess = db_session.create_session()
-    file_size = db_sess.query(File.size).filter(File.user_id == current_user.id).filter(File.id == file_id).first()
-    if not file_size:
+    file = db_sess.query(File).filter(File.user_id == current_user.id).filter(File.id == file_id).first()
+    if not file:
         return redirect('/home')
 
     if resources.is_file_operating(file_id):
@@ -188,12 +199,13 @@ def download(file_id):
     path_of_file = f"temp/{current_user.id}/{file_id}"
     if Path(path_of_file).exists():
         dirlist = listdir(path_of_file + '/file')
+        print(dirlist)
         if dirlist:
             full_path = path_of_file + '/file/' + dirlist[0]
-            if int(Path(full_path).stat().st_size) == int(file_size[0]):
+            if int(Path(full_path).stat().st_size) == int(file.size):
                 print('Sending file to client')
                 return send_file(full_path, as_attachment=True)
-
+    print('Starting downloading')
     Path(path_of_file + '/file').mkdir(parents=True, exist_ok=True)
     Path(path_of_file + '/chunks').mkdir(parents=True, exist_ok=True)
 
@@ -212,13 +224,16 @@ def download(file_id):
                     if bot['bot'].token == chunk.token and bot['load'] < config.uploading_limit_by_bot:
                         wait_for_bot = False
                         break
-
         threading.Thread(
             target=resources.download_by_bot,
             args=(bot, bot_number, file_id, path_of_file, chunk)
         ).start()
         chunks.remove(chunk)
-    return render_template('download_page.html')
+
+    response = make_response(render_template('download_page.html', title=f'Downloading {file.name}'))
+    response.set_cookie("downloading_file_id", str(file_id),
+                        max_age=60 * 60 * 24 * 365 * 2)
+    return response
 
 
 def main():

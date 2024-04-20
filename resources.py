@@ -47,9 +47,9 @@ def download_by_bot(bot, bot_number, file_id, path_of_file, chunk):
             break
 
     if current_task["progress"] == current_task["expected_chunks"]:
-        del bot_tasks[i]
         print(f'Downloading {file_id} done')
         assemble_file(path_of_file, file_id)
+        del bot_tasks[i]
 
 
 def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
@@ -92,8 +92,10 @@ def upload_by_bot(bot, chunk_path, bot_number, file_id, db_sess, parent_dir):
 
 
 def assemble_file(path_of_file, file_id):
+    print(f'Starting assembling {file_id}')
     db_sess = create_session()
-    name = db_sess.query(File.name).filter(File.id == file_id).first()[0]
+    name = db_sess.query(File.name).filter(File.id == file_id)[0][0]
+    db_sess.close()
     chunks = list(pathlib.Path(f"{path_of_file}/chunks").rglob('*.chk'))
     chunks.sort()
 
