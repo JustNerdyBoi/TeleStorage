@@ -234,7 +234,7 @@ def download(file_id):
 def main():
     from waitress import serve
     db_session.global_init("db/base.db")  # инициация бд
-    serve(app, host="192.168.1.54", port=4040, threads=6)
+    serve(app, host="192.168.1.54", port=5050, threads=6)
 
 
 
